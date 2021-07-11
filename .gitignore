@@ -1,0 +1,7 @@
+.DS_Store
+.cabal-sandbox/*
+elm-stuff/*
+elm-stuff/
+index.html
+
+
