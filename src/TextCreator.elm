@@ -35,6 +35,7 @@ import GraphicSVG.Widget exposing (Model)
 import Html exposing (th)
 import List
 import ShapeCreateAssets exposing (..)
+import ShapeCreator exposing (Colour(..))
 import String exposing (..)
 
 
@@ -45,11 +46,10 @@ init =
     , move_x = 0
     , move_y = 0
     , mycurrentbut = None
-    , location = ( -237, -77 )
+    , location = ( -237, -8 )
     , myscale = 1
     , myrotate = 0
     , recurMyshape = True
-    , recurMylist = False
     , time = 0
     , notify = NotifyTap
     , style = Solid
@@ -105,8 +105,41 @@ type NumDir
 type Shapes
     = MyCircle
     | MyRectangle
+    | MySquare
     | MyTriangle
     | MyText
+    | MyNgon
+
+
+type Colour
+    = RGB
+
+
+type Notifications
+    = NotifyTap
+    | NotifyTapAt
+    | NotifyEnter
+    | NotifyEnterAt
+    | NotifyLeave
+    | NotifyLeaveAt
+    | NotifyMouseMoveAt
+    | NotifyMouseDown
+    | NotifyMouseDownAt
+    | NotifyMouseUp
+    | NotifyMouseUpAt
+    | NotifyTouchStart
+    | NotifyTouchStartAt
+    | NotifyTouchEnd
+    | NotifyTouchEndAt
+    | NotifyTouchMoveAt
+
+
+type LineStyle
+    = Solid
+    | Dotted
+    | Dashed
+    | Longdash
+    | Dotdash
 
 
 update msg model =
@@ -139,7 +172,7 @@ update msg model =
                     if model.selectedRec == 0 then
                         case model.currentButton of
                             ValueUp ->
-                                if model.recurcounter < 50 then
+                                if model.recurcounter < 54 then
                                     model.recurcounter + valueChaning model.buttonDownTime
 
                                 else
@@ -157,28 +190,6 @@ update msg model =
 
                     else
                         model.recurcounter
-                , myscale =
-                    if model.selectedRec == 3 then
-                        case model.currentButton of
-                            ValueUp ->
-                                if model.myscale < 10 then
-                                    model.myscale + valueChaning model.buttonDownTime
-
-                                else
-                                    model.myscale
-
-                            ValueDown ->
-                                if model.myscale > 0 then
-                                    model.myscale - valueChaning model.buttonDownTime
-
-                                else
-                                    model.myscale
-
-                            _ ->
-                                model.myscale
-
-                    else
-                        model.myscale
                 , move_x =
                     if model.selectedRec == 1 then
                         case model.currentButton of
@@ -207,20 +218,6 @@ update msg model =
 
                     else
                         model.move_y
-                , myrotate =
-                    if model.selectedRec == 4 then
-                        case model.currentButton of
-                            ValueUp ->
-                                model.myrotate + valueChaning model.buttonDownTime
-
-                            ValueDown ->
-                                model.myrotate - valueChaning model.buttonDownTime
-
-                            _ ->
-                                model.myrotate
-
-                    else
-                        model.myrotate
             }
                 |> (if model.deleteButtondown > 2 then
                         \m -> { m | txt = dropRight 1 model.txt }
@@ -293,18 +290,24 @@ update msg model =
         ChangeShape MyRectangle ->
             { model | myshape = MyRectangle }
 
+        ChangeShape MySquare ->
+            { model | myshape = MySquare }
+
         ChangeShape MyTriangle ->
             { model | myshape = MyTriangle }
 
         ChangeShape MyText ->
             { model | myshape = MyText }
 
+        ChangeShape MyNgon ->
+            { model | myshape = MyNgon }
+
         ChangeValue NumUp ->
             { model
                 | recurcounter =
                     case model.selectedRec of
                         0 ->
-                            if model.recurcounter <= 50 then
+                            if model.recurcounter <= 54 then
                                 model.recurcounter + 1
 
                             else
@@ -397,7 +400,8 @@ update msg model =
 view model =
     [ graphPaperCustom 10 1 (rgb 50 250 130) |> makeTransparent 0.5 -- axes and selected coordinate ticks
     , shapeFun model -- To draw the different shapes in the middle of the canvas
-    , keyboard model |> scale 0.8 |> move ( -230, 146 ) --Keyboard for inputting the letters
+
+    --, keyboard model |> scale 0.8 |> move ( -230, 146 ) --Keyboard for inputting the letters
     , shapePicker |> scale 0.8 |> move ( -50, 25 ) --Left side of the screen, used for letting user to pick the shapes they want to use
     , yourCode model |> move ( 130, -110 ) --Right bottom, showing the code to the user
     , controlPanel model |> move ( -240, -20 ) -- Counter, Move, Scale etc.. The panels to control recursion
@@ -416,19 +420,37 @@ view model =
 
 shapePicker =
     group
-        [ circle 20
+        [ rect 200 160
+            |> filled (rgba 255 255 255 0.5)
+            |> addOutline (solid 1) lightGrey
+            |> move ( -155, 100 )
+        , text "1. Pick a shape"
+            |> serif
+            |> italic
+            |> size 15
+            |> filled orange
+            |> move ( -220, 190 )
+        , circle 20
             |> filled green
             |> notifyTap (ChangeShape MyCircle)
-            |> move ( -220, 30 )
+            |> move ( -220, 160 )
         , rect 40 40
             |> filled green
-            |> move ( -160, 30 )
-            |> notifyTap (ChangeShape MyRectangle)
+            |> move ( -160, 160 )
+            |> notifyTap (ChangeShape MySquare)
         , triangle 30
             |> filled green
             |> rotate (degrees 30)
-            |> move ( -95, 35 )
+            |> move ( -95, 162 )
             |> notifyTap (ChangeShape MyTriangle)
+        , rect 30 40
+            |> filled green
+            |> move ( -220, 100 )
+            |> notifyTap (ChangeShape MyRectangle)
+        , ngon 5 27
+            |> filled green
+            |> move ( -160, 100 )
+            |> notifyTap (ChangeShape MyNgon)
         ]
 
 
@@ -442,22 +464,20 @@ shapePicker =
 
 controlPanel m =
     group
-        [ text "RecursiveShapes"
-            |> fixedwidth
-            |> size 13
-            |> filled black
-            |> move ( -10, 15 )
-            |> notifyTap (TransM (\model -> { model | recurMyshape = not model.recurMyshape }))
-        , text "RecursiveList"
-            |> fixedwidth
-            |> size 13
-            |> filled black
-            |> move ( -10, -15 )
-            |> notifyTap (TransM (\model -> { model | recurMylist = not model.recurMylist }))
+        [ rect 200 160
+            |> filled (rgba 255 255 255 0.5)
+            |> addOutline (solid 1) lightGrey
+            |> move ( 50, -40 )
+        , text "2. Tweak it "
+            |> serif
+            |> italic
+            |> size 15
+            |> filled orange
+            |> move ( 10, 40 )
         , counterControl m |> move ( -10, -60 )
-        , moveControl m |> move ( 100, -60 )
-        , scaleControl m |> move ( -10, -120 )
-        , rotateControl m |> move ( 100, -120 )
+        , moveControl m |> move ( -10, -20 )
+        , scaleControl m |> move ( -10, -50 )
+        , rotateControl m |> move ( -10, -80 )
         ]
 
 
@@ -504,12 +524,12 @@ counterControl m =
             |> fixedwidth
             |> size 13
             |> filled black
-            |> move ( 0, 0 )
+            |> move ( 0, 70 )
         , text (String.fromFloat m.recurcounter)
             |> fixedwidth
             |> size 13
             |> filled black
-            |> move ( 60, 0 )
+            |> move ( 60, 70 )
         ]
 
 
@@ -537,11 +557,11 @@ blinkRectangle model =
     let
         invisibleLocation =
             -- Invisible locations for Counter, Move, Scale etc..
-            [ ( ( -182, -75 ), 0 )
-            , ( ( -82, -75 ), 1 )
-            , ( ( -43, -75 ), 2 )
-            , ( ( -188, -137 ), 3 )
-            , ( ( -77, -137 ), 4 )
+            [ ( ( -182, -5 ), 0 )
+            , ( ( -193, -35 ), 1 )
+            , ( ( -153, -35 ), 2 )
+            , ( ( -188, -65 ), 3 )
+            , ( ( -188, -95 ), 4 )
             ]
     in
     List.map
@@ -561,7 +581,7 @@ blinkRectangle model =
                         (\m ->
                             { m
                                 | selectedRec = selectedone
-                                , location = ( x - 55, y - 2 )
+                                , location = ( x - 55, y - 3 )
                             }
                         )
                     )
@@ -677,7 +697,7 @@ recurShape model =
 
 
 recursiveShape model counter myshape =
-    (if counter == 0 then
+    (if counter <= 0 then
         []
 
      else
@@ -700,52 +720,6 @@ recursiveShape model counter myshape =
 -}
 
 
-recursiveList model letters =
-    case letters of
-        letter1 :: moreLetters ->
-            [ text letter1 |> centered |> fixedwidth |> filled black
-            , recursiveList model moreLetters
-                |> scale model.myscale
-                |> rotate model.myrotate
-                |> move ( model.move_x, model.move_y )
-            ]
-                |> group
-
-        [] ->
-            group []
-
-
-type Colour
-    = RGB
-
-
-type Notifications
-    = NotifyTap
-    | NotifyTapAt
-    | NotifyEnter
-    | NotifyEnterAt
-    | NotifyLeave
-    | NotifyLeaveAt
-    | NotifyMouseMoveAt
-    | NotifyMouseDown
-    | NotifyMouseDownAt
-    | NotifyMouseUp
-    | NotifyMouseUpAt
-    | NotifyTouchStart
-    | NotifyTouchStartAt
-    | NotifyTouchEnd
-    | NotifyTouchEndAt
-    | NotifyTouchMoveAt
-
-
-type LineStyle
-    = Solid
-    | Dotted
-    | Dashed
-    | Longdash
-    | Dotdash
-
-
 cyan =
     rgb 0 150 150
 
@@ -764,123 +738,14 @@ colourAmount =
 -- main view components
 
 
-keyboard model =
-    group
-        [ rect 170 120 |> filled (rgba 255 255 255 0.5) |> addOutline (solid 1) lightGrey |> move ( 60, -23 )
-        , rect 89 12 |> filled white |> addOutline (solid 1) lightGrey |> move ( 60, 37 )
-        , text "1. Choose Your Text!" |> serif |> italic |> size 10 |> filled titleColour |> move ( 18, 34 )
-        , rect 20 20 |> filled red
-
-        -- , text "X" |> filled black |> move (113, -60) |> notifyTap (Clear)
-        , rect 20 20 |> filled white |> notifyTap Tab |> move ( 100, -57 )
-        , text "Aa" |> filled grey |> move ( 93, -60 ) |> notifyTap Tab
-        , if model.keyboard <= 2 then
-            group <|
-                List.map2
-                    (\y z ->
-                        rect 20 25 |> filled cyan |> move ( y, z + 6 )
-                    )
-                    (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                    (List.map (\x -> Basics.toFloat (-21 * (x // 7))) (List.range 0 25))
-
-          else
-            group <|
-                List.map2
-                    (\y z ->
-                        rect 20 25 |> filled cyan |> move ( y, z + 6 )
-                    )
-                    (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 20))
-                    (List.map (\x -> Basics.toFloat (-21 * (x // 7))) (List.range 0 20))
-        , if model.keyboard == 1 then
-            group <|
-                List.map3
-                    (\ss y z ->
-                        text ss |> centered |> size 18 |> filled white |> move ( y, z )
-                    )
-                    [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" ]
-                    (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                    (List.map (\x -> Basics.toFloat (-20 * (x // 7))) (List.range 0 25))
-                    ++ List.map3
-                        (\y z ss ->
-                            rect 20 25 |> filled white |> move ( y, z + 6 ) |> makeTransparent 0 |> notifyTap (Key ss)
-                        )
-                        (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                        (List.map (\x -> Basics.toFloat (-21 * (x // 7))) (List.range 0 25))
-                        [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" ]
-
-          else if model.keyboard == 2 then
-            group <|
-                List.map3
-                    (\ss y z ->
-                        text ss |> centered |> size 18 |> filled white |> move ( y, z )
-                    )
-                    [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" ]
-                    (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                    (List.map (\x -> Basics.toFloat (-20 * (x // 7))) (List.range 0 25))
-                    ++ List.map3
-                        (\y z ss ->
-                            rect 20 25 |> filled white |> move ( y, z + 6 ) |> makeTransparent 0 |> notifyTap (Key ss)
-                        )
-                        (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                        (List.map (\x -> Basics.toFloat (-21 * (x // 7))) (List.range 0 25))
-                        [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" ]
-
-          else if model.keyboard == 3 then
-            group <|
-                List.map3
-                    (\ss y z ->
-                        text ss |> centered |> size 18 |> filled white |> move ( y, z )
-                    )
-                    [ "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "[", "]", "\"", ";", "'", ",", ".", "/" ]
-                    (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                    (List.map (\x -> Basics.toFloat (-20 * (x // 7))) (List.range 0 25))
-                    ++ List.map3
-                        (\y z ss ->
-                            rect 20 25 |> filled white |> move ( y, z + 6 ) |> makeTransparent 0 |> notifyTap (Key ss)
-                        )
-                        (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 20))
-                        (List.map (\x -> Basics.toFloat (-21 * (x // 7))) (List.range 0 20))
-                        [ "`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "[", "]", "\"", ";", "'", ",", ".", "/" ]
-                    ++ [ rect 100 25 |> filled cyan |> move ( 40, Basics.toFloat (-21 * (21 // 7)) + 6 )
-                       , text "SPACE" |> filled white |> move ( 20, Basics.toFloat (-21 * (21 // 7)) )
-                       , rect 100 25 |> filled white |> makeTransparent 0 |> move ( 40, Basics.toFloat (-21 * (21 // 7)) + 6 ) |> notifyTap (Key " ")
-                       ]
-
-          else
-            group <|
-                List.map3
-                    (\ss y z ->
-                        text ss |> centered |> size 18 |> filled white |> move ( y, z )
-                    )
-                    [ "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", "", ":", "<", ">", "?" ]
-                    -- missing "
-                    (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 25))
-                    (List.map (\x -> Basics.toFloat (-20 * (x // 7))) (List.range 0 25))
-                    ++ List.map3
-                        (\y z ss ->
-                            rect 20 25 |> filled white |> move ( y, z + 6 ) |> makeTransparent 0 |> notifyTap (Key ss)
-                        )
-                        (List.map (\x -> Basics.toFloat (20 * (x |> modBy 7))) (List.range 0 20))
-                        (List.map (\x -> Basics.toFloat (-21 * (x // 7))) (List.range 0 20))
-                        [ "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", "", ":", "<", ">", "?" ]
-        , group [ circle 10 |> filled red, rect 5 15 |> filled white |> rotate (degrees 45), rect 5 15 |> filled white |> rotate (degrees -45) ]
-            |> notifyTap ClearOne
-            |> move ( 120, -57 )
-            |> notifyMouseDown (ButtonDown Delete)
-            |> notifyMouseUp (ButtonDown None)
-        ]
-
-
 valueChaning x =
     Basics.toFloat (round (clamp 0 12 (x ^ 2) / 4))
 
 
 yourCode m =
     group
-        [ rect 250 180 |> filled (rgba 255 255 255 0.5) |> addOutline (solid 1) lightGrey |> move ( 15, -75 )
-        , rect 80 12 |> filled white |> addOutline (solid 1) lightGrey |> move ( -55, 14 )
-        , text "Your code!" |> serif |> italic |> size 10 |> filled titleColour |> move ( -90, 11 )
-        , "This is ***********" |> copiable |> move ( -105, 0 )
+        [ rect 250 180 |> filled (rgba 255 255 255 0.5) |> addOutline (solid 1) lightGrey |> move ( 15, -98 )
+        , text "3. Your code" |> serif |> italic |> size 15 |> filled orange |> move ( -20, -5 )
         , "recursiveShape model counter myshape = " |> copiable |> move ( -105, -20 )
         , " ( if " ++ "conter" ++ "== 0 then" |> copiable |> move ( -105, -30 )
         , "     []" |> copiable |> move ( -105, -40 )
@@ -889,7 +754,7 @@ yourCode m =
         , "     , recursiveShape model " ++ "(counter - 1))" ++ " " ++ shapeToString m |> copiable |> move ( -105, -70 )
         , "         |> move ( " ++ String.fromFloat m.move_x ++ " , " ++ String.fromFloat m.move_y ++ " )" |> copiable |> move ( -105, -80 )
         , "         |>scale " ++ String.fromFloat m.myscale |> copiable |> move ( -105, -90 )
-        , "         |>rotate " ++ "( degrees 30)" |> copiable |> move ( -105, -100 )
+        , "         |>rotate " ++ "( degrees " ++ String.fromFloat m.myrotate ++ ")" |> copiable |> move ( -105, -100 )
         , "     ]" |> copiable |> move ( -105, -110 )
         , " )" |> copiable |> move ( -105, -120 )
         , " |> group" |> copiable |> move ( -105, -130 )
@@ -905,42 +770,54 @@ shapeToString m =
         MyRectangle ->
             "Rectangle"
 
+        MySquare ->
+            "Square"
+
         MyTriangle ->
             "Triangle"
 
         MyText ->
             "Text"
 
+        MyNgon ->
+            "Ngon"
+
 
 shapeFun m =
-    if m.recurMylist then
-        recursiveList m (m.txt |> String.toList |> List.map String.fromChar)
+    (case m.myshape of
+        MyText ->
+            text m.txt
+                |> fixedwidth
+                |> size 13
+                |> filled black
 
-    else
-        (case m.myshape of
-            MyText ->
-                text m.txt
-                    |> fixedwidth
-                    |> size 13
-                    |> filled black
+        MyCircle ->
+            circle 30
+                |> outlined (solid 1) red
+                |> move ( 0, 50 )
 
-            MyCircle ->
-                circle 30
-                    |> outlined (solid 1) red
-                    |> move ( 0, 50 )
+        MyRectangle ->
+            rect 30 40
+                |> outlined (solid 1) red
+                |> move ( 0, 50 )
 
-            MyRectangle ->
-                rect 40 40
-                    |> outlined (solid 1) red
-                    |> move ( 0, 50 )
+        MySquare ->
+            rect 40 40
+                |> outlined (solid 1) red
+                |> move ( 0, 50 )
 
-            MyTriangle ->
-                triangle 40
-                    |> outlined (solid 1) red
-                    |> rotate (degrees 30)
-                    |> move ( 0, 50 )
-        )
-            |> recurShape m
+        MyTriangle ->
+            triangle 40
+                |> outlined (solid 1) red
+                |> rotate (degrees 30)
+                |> move ( 0, 50 )
+
+        MyNgon ->
+            ngon 5 40
+                |> outlined (solid 1) red
+                |> move ( 0, 50 )
+    )
+        |> recursiveShape m m.recurcounter
 
 
 titleColour =
