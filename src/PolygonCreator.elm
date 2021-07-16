@@ -1,4 +1,5 @@
 module PolygonCreator exposing (..)
+import Round
 
 {-
    Copyright 2017-2019 Christopher Kumar Anand,  Adele Olejarz, Chinmay Sheth, Yaminah Qureshi, Graeme Crawley and students of McMaster University.  Based on the Shape Creator by Levin Noronha.
@@ -34,6 +35,7 @@ import GraphicSVG.EllieApp exposing (..)
 import GraphicSVG.Widget exposing (Model)
 import Html exposing (th)
 import List
+import Round
 import ShapeCreateAssets exposing (..)
 import String exposing (..)
 
@@ -316,7 +318,7 @@ update msg model =
                 , myscale =
                     case model.selectedRec of
                         3 ->
-                            if model.myscale > 0 then
+                            if model.myscale > 0.05 then
                                 model.myscale - 0.05
 
                             else
@@ -336,10 +338,10 @@ update msg model =
 
 view model =
     [ graphPaperCustom 10 1 (rgb 50 250 130) |> makeTransparent 0.5 -- axes and selected coordinate ticks
-    , shapeFun model |> move ( 50, 50 ) -- To draw the different shapes in the middle of the canvas
+    , shapeFun model |> move ( -50, 50 ) -- To draw the different shapes in the middle of the canvas
     , keyboard model |> scale 0.8 |> move ( -230, 146 ) --Keyboard for inputting the letters
-    , yourCode model |> move ( 130, -110 )  --Right bottom, showing the code to the user
-    , controlPanel model |> move ( -250 , 75 ) |> scale 0.9 -- Counter, Move, Scale etc.. The panels to control recursion
+    , yourCode model |> move ( 130, -110 ) --Right bottom, showing the code to the user
+    , controlPanel model |> move ( -250, 75 ) |> scale 0.9 -- Counter, Move, Scale etc.. The panels to control recursion
     , group (blinkRectangle model) -- Make the selected paramater blink
     , group [ keypad model ] -- The upside triangle and downside triangle to increase and decrease the value of each seleteced parameter
     ]
@@ -369,7 +371,7 @@ controlPanel m =
             |> italic
             |> size 15
             |> filled orange
-            |> move ( -5, 5)
+            |> move ( -5, 5 )
 
         --, counterControl m |> move ( -10, -60 )
         , moveControl m |> move ( -10, -20 )
@@ -538,7 +540,7 @@ scaleControl m =
             |> size 13
             |> filled black
             |> move ( 0, 0 )
-        , text (String.fromFloat m.myscale)
+        , text (Round.round 2 m.myscale)--(String.fromFloat m.myscale)
             |> fixedwidth
             |> size 13
             |> filled black
@@ -739,11 +741,11 @@ yourCode m =
         , "     recurList listOfletters =  " |> copiable |> move ( -105, -30 )
         , "         case listOfletters of " |> copiable |> move ( -105, -40 )
         , "             x :: rest -> " |> copiable |> move ( -105, -50 )
-        , "                 [ text " ++ String.right 1 m.txt |> copiable |> move ( -105, -60 )
+        , "                 [ text " ++ String.left 1 m.txt |> copiable |> move ( -105, -60 )
         , "                     |> centered " |> copiable |> move ( -105, -70 )
         , "                     |> fixedwidth " |> copiable |> move ( -105, -80 )
         , "                     |> filled black" |> copiable |> move ( -105, -90 )
-        , "                 , recurList listOfLetters " |> copiable |> move ( -105, -100 )
+        , "                 , recurList " ++ String.dropLeft 1 m.txt |> copiable |> move ( -105, -100 )
         , "                     |> scale " ++ String.fromFloat m.myscale |> copiable |> move ( -105, -110 )
         , "                     |> rotate " ++ String.fromFloat m.myrotate |> copiable |> move ( -105, -120 )
         , "                     |> move ( " ++ String.fromFloat m.move_x ++ " , " ++ String.fromFloat m.move_y ++ " )" |> copiable |> move ( -105, -130 )

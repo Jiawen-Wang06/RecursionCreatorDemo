@@ -403,7 +403,7 @@ view model =
 
     --, keyboard model |> scale 0.8 |> move ( -230, 146 ) --Keyboard for inputting the letters
     , shapePicker |> scale 0.8 |> move ( -50, 25 ) --Left side of the screen, used for letting user to pick the shapes they want to use
-    , yourCode model |> move ( 130, -110 ) --Right bottom, showing the code to the user
+    , yourCode model |> move ( 80, -110 ) --Right bottom, showing the code to the user
     , controlPanel model |> move ( -240, -20 ) -- Counter, Move, Scale etc.. The panels to control recursion
     , group (blinkRectangle model) -- Make the selected paramater blink
     , group [ keypad model ] -- The upside triangle and downside triangle to increase and decrease the value of each seleteced parameter
@@ -696,13 +696,13 @@ recurShape model =
 -}
 
 
-recursiveShape model counter myshape =
-    (if counter <= 0 then
+recursiveShape model count myshape =
+    (if count <= 0 then
         []
 
      else
         [ myshape
-        , recursiveShape model (counter - 1) myshape
+        , recursiveShape model (count - 1) myshape
             |> move ( model.move_x, model.move_y )
             |> scale model.myscale
             |> rotate (degrees model.myrotate)
@@ -744,14 +744,14 @@ valueChaning x =
 
 yourCode m =
     group
-        [ rect 250 180 |> filled (rgba 255 255 255 0.5) |> addOutline (solid 1) lightGrey |> move ( 15, -98 )
+        [ rect 300 180 |> filled (rgba 255 255 255 0.5) |> addOutline (solid 1) lightGrey |> move ( 30, -98 )
         , text "3. Your code" |> serif |> italic |> size 15 |> filled orange |> move ( -20, -5 )
-        , "recursiveShape model counter myshape = " |> copiable |> move ( -105, -20 )
-        , " ( if " ++ "conter" ++ "== 0 then" |> copiable |> move ( -105, -30 )
+        , "recursiveShape model count myshape = " |> copiable |> move ( -105, -20 )
+        , " ( if " ++ "count" ++ "== 0 then" |> copiable |> move ( -105, -30 )
         , "     []" |> copiable |> move ( -105, -40 )
         , "   else" |> copiable |> move ( -105, -50 )
         , "     [ " ++ shapeToString m |> copiable |> move ( -105, -60 )
-        , "     , recursiveShape model " ++ "(counter - 1))" ++ " " ++ shapeToString m |> copiable |> move ( -105, -70 )
+        , "     , recursiveShape model " ++ "(count - 1))" ++ " " ++ shapeToString m |> copiable |> move ( -105, -70 )
         , "         |> move ( " ++ String.fromFloat m.move_x ++ " , " ++ String.fromFloat m.move_y ++ " )" |> copiable |> move ( -105, -80 )
         , "         |>scale " ++ String.fromFloat m.myscale |> copiable |> move ( -105, -90 )
         , "         |>rotate " ++ "( degrees " ++ String.fromFloat m.myrotate ++ ")" |> copiable |> move ( -105, -100 )
