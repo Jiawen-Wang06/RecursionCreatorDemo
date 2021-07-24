@@ -34,6 +34,7 @@ import GraphicSVG.EllieApp exposing (..)
 import GraphicSVG.Widget exposing (Model)
 import Html exposing (th)
 import List
+import Round
 import ShapeCreateAssets exposing (..)
 import ShapeCreator exposing (Colour(..))
 import String exposing (..)
@@ -333,7 +334,7 @@ update msg model =
                     case model.selectedRec of
                         3 ->
                             if model.myscale < 5 then
-                                model.myscale + 0.25
+                                model.myscale + 0.05
 
                             else
                                 model.myscale
@@ -380,7 +381,7 @@ update msg model =
                     case model.selectedRec of
                         3 ->
                             if model.myscale > 0 then
-                                model.myscale - 0.25
+                                model.myscale - 0.05
 
                             else
                                 model.myscale
@@ -560,7 +561,7 @@ blinkRectangle model =
             [ ( ( -182, -5 ), 0 )
             , ( ( -193, -35 ), 1 )
             , ( ( -153, -35 ), 2 )
-            , ( ( -188, -65 ), 3 )
+            , ( ( -180, -65 ), 3 )
             , ( ( -188, -95 ), 4 )
             ]
     in
@@ -642,7 +643,7 @@ scaleControl m =
             |> size 13
             |> filled black
             |> move ( 0, 0 )
-        , text (String.fromFloat m.myscale)
+        , text (Round.round 2 m.myscale)
             |> fixedwidth
             |> size 13
             |> filled black

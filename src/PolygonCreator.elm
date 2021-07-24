@@ -458,7 +458,7 @@ blinkRectangle model =
             -- Invisible locations for Counter, Move, Scale etc..
             [ ( ( -185, 54 ), 1 )
             , ( ( -148, 54 ), 2 )
-            , ( ( -178, 28 ), 3 )
+            , ( ( -172, 28 ), 3 )
             , ( ( -178, 0 ), 4 )
             ]
     in
